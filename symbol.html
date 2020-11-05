@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>three.js webgl - геометрические фигуры</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <link type="text/css" rel="stylesheet" href="https://threejs.org/examples/main.css">
+</head>
+
+<body>
+    <div id="info">
+        <ul class="menu-main">
+            <li><a href="index.html">Laba1</a></li>
+            <li><a href="earth.html">Laba2</a></li>
+            <li><a href="symbol.html" class="current">Laba3</a></li>
+            <li><a href="contacts.html">Contact</a></li>
+        </ul>
+    </div>
+    <script type="module">
+        (function onLoad() {
+            var container, camera, scene, renderer, controls;
+
+            init();
+            animate();
+
+            function init() {
+                container = document.getElementById('container');
+
+                renderer = new THREE.WebGLRenderer({
+                    antialias: true
+                });
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.shadowMap.enabled = true;
+                container.appendChild(renderer.domElement);
+
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0xffffff);
+
+                camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000);
+                camera.position.set(3, 2, 7);
+                scene.add(camera);
+                window.onresize = function () {
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                }
+
+                var ambientLight = new THREE.AmbientLight(0x404040);
+                scene.add(ambientLight);
+
+                var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+                directionalLight.position.x = 4;
+                directionalLight.position.y = 1;
+                directionalLight.position.z = 2;
+                scene.add(directionalLight);
+
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+                addGridHelper();
+                createModel();
+            }
+
+            function createModel() {
+
+                let f_rect = function roundedRect(ctx, x, y, width, height, radius) {
+                    ctx.moveTo(x, y + radius);
+                    ctx.lineTo(x, y + height - radius);
+                    ctx.quadraticCurveTo(x, y + height, x + radius, y + height);
+                    ctx.lineTo(x + width - radius, y + height);
+                    ctx.quadraticCurveTo(x + width, y + height, x + width, y + height - radius);
+                    ctx.lineTo(x + width, y + radius);
+                    ctx.quadraticCurveTo(x + width, y, x + width - radius, y);
+                    ctx.lineTo(x + radius, y);
+                    ctx.quadraticCurveTo(x, y, x, y + radius);
+                }
+
+                let f_rect_reverse = function roundedRect(ctx, x, y, width, height, radius) {
+                    ctx.moveTo(x, y + height - radius);
+                    ctx.lineTo(x, y + radius);
+                    ctx.quadraticCurveTo(x, y, x + radius, y);
+                    ctx.lineTo(x + width - radius, y);
+                    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+                    ctx.lineTo(x + width, y + height - radius);
+                    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                    ctx.lineTo(x + radius, y + height);
+                    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+                }
+
+                var roundedRectShape = new THREE.Shape();
+                f_rect(roundedRectShape, -25, -25, 50, 50, 20);
+                var roundedRectShape_small = new THREE.Path();
+                f_rect_reverse(roundedRectShape_small, -15, -15, 30, 30, 10);
+                roundedRectShape.holes.push(roundedRectShape_small);
+
+                var material = new THREE.MeshLambertMaterial({ color: 0x00ff00, side: THREE.DoubleSide });
+                var extrudeSettings = { depth: 8, bevelEnabled: true, bevelSegments: 2, steps: 3, bevelSize: 5, bevelThickness: 5 };
+                var geometry = new THREE.ExtrudeBufferGeometry(roundedRectShape, extrudeSettings);
+
+                let s = 0.1;
+                var mesh = new THREE.Mesh(geometry, material);
+                mesh.scale.set(s, s, s);
+
+                scene.add(mesh);
+            }
+
+            function addGridHelper() {
+
+                var helper = new THREE.GridHelper(10, 10);
+                helper.material.opacity = 0.25;
+                helper.material.transparent = true;
+                scene.add(helper);
+
+                var axis = new THREE.AxesHelper(100);
+                scene.add(axis);
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                render();
+            }
+
+            function render() {
+                renderer.render(scene, camera);
+            }
+        })();
+    </script>
+    <script src="https://threejs.org/build/three.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <div id="container"></div>
+
+
+
+</body>
+
+</html>
